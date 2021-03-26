@@ -1,0 +1,42 @@
+{
+  "name": "@crowdsec/express-bouncer",
+  "version": "0.1.1",
+  "description": "CrowdSec is composed of a behavior detection engine, able to block classical attacks like credential bruteforce, port scans, web scans, etc. Based on the type and number of blocked attacks, and after curation of those signals to avoid false positives and poisoning, a global IP reputation DB is maintained and shared with all network members. This npm module is a “bouncer”, which purpose is to block detected attacks with two remediation systems: ban or challenge detected attackers with a Captcha.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --runInBand"
+  },
+  "keywords": [
+    "captcha",
+    "firewall",
+    "security"
+  ],
+  "author": "CrowdSec team",
+  "license": "MIT",
+  "dependencies": {
+    "ip-address": "^7.1.0",
+    "isomorphic-fetch": "^3.0.0",
+    "lodash": "^4.17.21",
+    "svg-captcha": "^1.4.0",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.22",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "jest": "^26.6.3",
+    "jest-fetch-mock": "^3.0.3"
+  },
+  "directories": {
+    "doc": "docs",
+    "example": "examples"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crowdsecurity/cs-express-bouncer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/crowdsecurity/cs-express-bouncer/issues"
+  },
+  "homepage": "https://github.com/crowdsecurity/cs-express-bouncer#readme"
+}
