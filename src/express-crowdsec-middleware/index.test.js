@@ -42,6 +42,14 @@ describe("Express CrowdSec Middleware", () => {
 
   const mockHttpRequestFrom3455 = { connection: { remoteAddress: "3.4.5.5" } };
   const mockHttpRequestFrom3456 = { connection: { remoteAddress: "3.4.5.6" } };
+  const mockHttpRequestFromProxy1234ForwardedFor3456 = {
+    connection: {
+      remoteAddress: "1.2.3.4",
+    },
+    headers: {
+      "x-forwarded-for": "3.4.5.6",
+    },
+  };
   const mockHttpRequestFrom3456ipv6 = {
     connection: { remoteAddress: "::ffff:3.4.5.6" },
   };
@@ -120,6 +128,96 @@ describe("Express CrowdSec Middleware", () => {
     expect(mockResponse.send).toBeCalledWith(
       expect.stringContaining("your IP has been banned")
     );
+  });
+
+  it("should trust Forwarded IP 3.4.5.6 using a whitelisted proxy", async () => {
+    // Setup CrowdSec context.
+    const customLogger = getLogger();
+    const loggerSpy = jest.spyOn(customLogger, "debug");
+    crowdsecMiddleware = await crowdsecMiddlewareBuilder({
+      ...baseConfiguration,
+      trustedRangesForIpForwarding: ["1.2.3.4"],
+      customLogger,
+    });
+    if (USE_CROWDSEC_MOCKS) {
+      mockResponseNoDecisions();
+    } else {
+      await addDecision({ ipOrRange: "3.4.5.6", type: "ban" });
+    }
+
+    // Simulate HTTP call.
+    await crowdsecMiddleware(
+      mockHttpRequestFromProxy1234ForwardedFor3456,
+      mockResponse,
+      nextFunction
+    );
+
+    // Expect IP to be trust as the proxy is whitelisted.
+    expect(loggerSpy).toHaveBeenCalledWith({
+      type: "IP_BEHIND_WHITELISTED_PROXY",
+      forwardedIp: "3.4.5.6",
+      remoteIp: "1.2.3.4",
+    });
+  });
+
+  it("should trust Forwarded IP 3.4.5.6 using a whitelisted proxy range", async () => {
+    // Setup CrowdSec context.
+    const customLogger = getLogger();
+    const loggerSpy = jest.spyOn(customLogger, "debug");
+    crowdsecMiddleware = await crowdsecMiddlewareBuilder({
+      ...baseConfiguration,
+      trustedRangesForIpForwarding: ["1.2.3.4/32"],
+      customLogger,
+    });
+    if (USE_CROWDSEC_MOCKS) {
+      mockResponseNoDecisions();
+    } else {
+      await addDecision({ ipOrRange: "3.4.5.6", type: "ban" });
+    }
+
+    // Simulate HTTP call.
+    await crowdsecMiddleware(
+      mockHttpRequestFromProxy1234ForwardedFor3456,
+      mockResponse,
+      nextFunction
+    );
+
+    // Expect IP to be trust as the proxy is whitelisted.
+    expect(loggerSpy).toHaveBeenCalledWith({
+      type: "IP_BEHIND_WHITELISTED_PROXY",
+      forwardedIp: "3.4.5.6",
+      remoteIp: "1.2.3.4",
+    });
+  });
+
+  it("should not trust IP 3.4.5.6 using a NOT whitelisted proxy", async () => {
+    // Setup CrowdSec context.
+    const customLogger = getLogger();
+    const loggerSpy = jest.spyOn(customLogger, "warn");
+    crowdsecMiddleware = await crowdsecMiddlewareBuilder({
+      ...baseConfiguration,
+      trustedRangesForIpForwarding: ["2.3.4.5"],
+      customLogger,
+    });
+    if (USE_CROWDSEC_MOCKS) {
+      mockResponseNoDecisions();
+    } else {
+      await addDecision({ ipOrRange: "3.4.5.6", type: "ban" });
+    }
+
+    // Simulate HTTP call.
+    await crowdsecMiddleware(
+      mockHttpRequestFromProxy1234ForwardedFor3456,
+      mockResponse,
+      nextFunction
+    );
+
+    // Expect IP to be trust as the proxy is whitelisted.
+    expect(loggerSpy).toHaveBeenCalledWith({
+      type: "FAKE_FORWARDED_FOR_USED",
+      remoteIp: "1.2.3.4",
+      xffHeader: "3.4.5.6",
+    });
   });
 
   it('should bypass the ban remediation for the IP 3.4.5.6 as the "bypass" mode is enabled', async () => {

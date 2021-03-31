@@ -6,6 +6,7 @@ const {
   getRemediationForIp,
 } = require("../nodejs-bouncer");
 const applyCaptcha = require("./lib/captcha");
+const { getRealIp } = require("./lib/getRealIp");
 
 const {
   BYPASS_REMEDIATION,
@@ -69,6 +70,7 @@ module.exports = async ({
   hideCrowdsecMentions = false,
   customCss = "",
   bypass = false,
+  trustedRangesForIpForwarding = [],
   customLogger = null,
   bypassConnectionTest = false,
 }) => {
@@ -98,7 +100,7 @@ module.exports = async ({
 
   const crowdsecMiddleware = async (req, res, next) => {
     try {
-      const ip = req.connection.remoteAddress;
+      const ip = getRealIp(req, trustedRangesForIpForwarding, logger);
       if (bypass) {
         logger.debug({ type: "BYPASSING_IP_VERIFICATION", ip });
         next();

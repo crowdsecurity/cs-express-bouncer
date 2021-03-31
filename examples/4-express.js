@@ -66,6 +66,7 @@ process.on("uncaughtException", exitHandler.bind(null, { exit: true }));
       //captchaResolutionCacheDuration = 30 * 60 * 1000, // The time a resolved captcha should be resolved one more time if the "captcha" decision is still active
       //hideCrowdsecMentions = false, // To display or hide CrowdSec mention on the walls
       //customLogger = null // You can use a custom Winston logger
+      //trustedRangesForIpForwarding = [] // The list of IPs to trust as proxies
       //bypassConnectionTest = [] // To bypass the connection test at middleware initialization
     })
   );
