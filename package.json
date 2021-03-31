@@ -4,7 +4,13 @@
   "description": "CrowdSec is composed of a behavior detection engine, able to block classical attacks like credential bruteforce, port scans, web scans, etc. Based on the type and number of blocked attacks, and after curation of those signals to avoid false positives and poisoning, a global IP reputation DB is maintained and shared with all network members. This npm module is a “bouncer”, which purpose is to block detected attacks with two remediation systems: ban or challenge detected attackers with a Captcha.",
   "main": "index.js",
   "scripts": {
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "test:unit:verbose": "CONSOLE_LOGGER_LEVEL=debug npm test",
+    "test:func": "USE_CROWDSEC_MOCKS=0 npm test",
+    "test:func:verbose": "CONSOLE_LOGGER_LEVEL=debug npm run test:func",
+    "test10": "n exec 10 npm test",
+    "test12": "n exec 12 npm test",
+    "testLts": "n exec lts npm test"
   },
   "keywords": [
     "captcha",
