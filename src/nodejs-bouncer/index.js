@@ -11,6 +11,10 @@ const {
   BYPASS_REMEDIATION,
   BAN_REMEDIATION,
 } = require("./lib/constants");
+const {
+  renderBanWall: renderBanWallWithParams,
+  renderCaptchaWall: renderCaptchaWallWithParams,
+} = require("./lib/renderer");
 
 let fallbackRemediationValue;
 let maxRemediationValue;
@@ -28,11 +32,21 @@ const configure = ({
   timeout = 2000,
   fallbackRemediation = BAN_REMEDIATION,
   maxRemediation = BAN_REMEDIATION,
+  captchaTexts = {},
+  banTexts = {},
+  colors = {},
+  hideCrowdsecMentions = false,
+  customCss = "",
 }) => {
   logger = getLogger();
   configureClient({ url, apiKey, userAgent, timeout });
   fallbackRemediationValue = fallbackRemediation;
   maxRemediationValue = maxRemediation;
+  captchaTextsValue = captchaTexts;
+  banTextsValue = banTexts;
+  colorsValue = colors;
+  hideCrowdsecMentionsValue = hideCrowdsecMentions;
+  customCssValue = customCss;
 };
 
 const getHigherRemediation = (decisions) => {
@@ -85,9 +99,33 @@ const getRemediationForIp = async (ip) => {
   const remediation = getHigherRemediation(decisions);
   return remediation;
 };
+
+renderBanWall = () => {
+  return renderBanWallWithParams({
+    texts: banTextsValue,
+    colors: colorsValue,
+    hideCrowdsecMentions: hideCrowdsecMentionsValue,
+    customCss: customCssValue,
+  });
+};
+
+renderCaptchaWall = ({ captchaImageTag, captchaResolutionFormUrl, error }) => {
+  return renderCaptchaWallWithParams({
+    texts: captchaTextsValue,
+    colors: colorsValue,
+    captchaImageTag,
+    captchaResolutionFormUrl,
+    error,
+    hideCrowdsecMentions: hideCrowdsecMentionsValue,
+    customCss: customCssValue,
+  });
+};
+
 module.exports = {
   configure,
   testConnectionToCrowdSec,
   getRemediationForIp,
+  renderBanWall,
+  renderCaptchaWall,
   parseIpOrRange,
 };
