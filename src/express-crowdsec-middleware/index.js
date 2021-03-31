@@ -5,9 +5,11 @@ const {
   testConnectionToCrowdSec,
   getRemediationForIp,
 } = require("../nodejs-bouncer");
+const applyCaptcha = require("./lib/captcha");
 
 const {
   BYPASS_REMEDIATION,
+  CAPTCHA_REMEDIATION,
   BAN_REMEDIATION,
 } = require("../nodejs-bouncer/lib/constants");
 let logger;
@@ -18,7 +20,15 @@ const applyBan = async (req, res) => {
   res.send(banWallTemplate);
 };
 
-const applyRemediation = async (remediation, req, res, next) => {
+const applyRemediation = async (
+  ip,
+  remediation,
+  req,
+  res,
+  next,
+  captchaGenerationCacheDuration,
+  captchaResolutionCacheDuration
+) => {
   req.crowdSecRemediation = remediation;
   switch (remediation) {
     case BYPASS_REMEDIATION:
@@ -26,6 +36,17 @@ const applyRemediation = async (remediation, req, res, next) => {
       break;
     case BAN_REMEDIATION:
       await applyBan(req, res);
+      break;
+    case CAPTCHA_REMEDIATION:
+      await applyCaptcha(
+        ip,
+        req,
+        res,
+        next,
+        captchaGenerationCacheDuration,
+        captchaResolutionCacheDuration,
+        logger
+      );
       break;
     default:
       logger.error(`Unhandled remediation: ${remediation}`);
@@ -40,6 +61,9 @@ module.exports = async ({
   timeout = 2000,
   fallbackRemediation = BAN_REMEDIATION,
   maxRemediation = BAN_REMEDIATION,
+  captchaGenerationCacheDuration = 60 * 1000,
+  captchaResolutionCacheDuration = 30 * 60 * 1000,
+  captchaTexts = {},
   banTexts = {},
   colors = {},
   hideCrowdsecMentions = false,
@@ -56,6 +80,7 @@ module.exports = async ({
     timeout,
     fallbackRemediation,
     maxRemediation,
+    captchaTexts,
     banTexts,
     colors,
     hideCrowdsecMentions,
@@ -82,7 +107,15 @@ module.exports = async ({
       const remediation = await getRemediationForIp(ip);
       logger.debug({ type: "VERIFY_IP", ip, remediation });
 
-      await applyRemediation(remediation, req, res, next);
+      await applyRemediation(
+        ip,
+        remediation,
+        req,
+        res,
+        next,
+        captchaGenerationCacheDuration,
+        captchaResolutionCacheDuration
+      );
     } catch (err) {
       console.error(err);
       logger.warn({
