@@ -26,18 +26,20 @@ Here is the exhaustive list of bouncer features.
 
 ## How to use this Express middleware
 
-Note: You must first have CrowdSec installed on your server. The [installation is very simple](https://doc.crowdsec.net/Crowdsec/v1/getting_started/installation/#installation).
+> Note: You must first have CrowdSec installed on your server. The [installation is very simple](https://doc.crowdsec.net/Crowdsec/v1/getting_started/installation/#installation).
+
+
 
 First, install the **Crowdsec Bouncer** express middleware:
 
 ```bash
-npm install express-crowdsec-bouncer
+npm install @crowdsec/express-bouncer
 ```
 
 or
 
 ```bash
-yarn add express-crowdsec-bouncer
+yarn add @crowdsec/express-bouncer
 ```
 
 Then init the Express middleware. Here is a quick usage example.
@@ -45,13 +47,13 @@ Then init the Express middleware. Here is a quick usage example.
 ```javascript
 const express = require("express");
 const bodyParser = require("body-parser");
-const expressCrowdsecBouncer = require("express-crowdsec-bouncer");
+const expressCrowdsecBouncer = require("@crowdsec/express-bouncer");
 
 (async () => {
   // Configure CrowdSec Middleware.
   const crowdsecMiddleware = await expressCrowdsecBouncer({
     url: "http://localhost:8080",
-    apiKey: "INSERT_YOUR_API_KEY",
+    apiKey: "INSERT_YOUR_BOUNCER_API_KEY",
   });
 
   // Configure Express server.
@@ -71,6 +73,7 @@ const expressCrowdsecBouncer = require("express-crowdsec-bouncer");
   );
 })();
 ```
+> Note: To get a _bouncer API key_, just type `cscli bouncers add express-js-bouncer` (you can replace the name `express-js-bouncer` by anything you prefer).
 
 ## Configuration
 

@@ -20,5 +20,5 @@ Create the NPM version
 
 ```bash
 npm version from-git
-npm publish
+npm publish --access public
 ```
